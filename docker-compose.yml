@@ -1,0 +1,90 @@
+version: '3.1'
+services:
+  axon-server:
+    image: axoniq/axonserver
+    hostname: axonserver
+    ports:
+      - 8024:8024
+      - 8124:8124
+    networks:
+      - default-network
+
+  keycloak-server:
+    image: quay.io/keycloak/keycloak:latest
+    hostname: keycloak
+    ports:
+      - 8080:8080
+    environment:
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=admin
+    networks:
+      - default-network
+
+  discovery-service:
+    build: ./discovery-service/
+    hostname: discovery-service
+    ports:
+      - "8761:8761"
+    networks:
+      - default-network
+
+  customer-service:
+    build: ./customer-service/
+    hostname: customer-service
+    ports:
+      - "8001:8001"
+    depends_on:
+      - discovery-service
+      - axon-server
+      - keycloak-server
+    environment:
+      - eureka.client.service-url.defaultZone=http://discovery-service:8761/eureka
+    networks:
+      - default-network
+
+  inventory-service:
+    build: ./inventory-service/
+    hostname: inventory-service
+    ports:
+      - "8002:8002"
+    depends_on:
+      - discovery-service
+      - axon-server
+      - keycloak-server
+    environment:
+      - eureka.client.service-url.defaultZone=http://discovery-service:8761/eureka
+    networks:
+      - default-network
+  
+  order-service:
+    build: ./order-service/
+    hostname: order-service
+    ports:
+      - "8003:8003"
+    depends_on:
+      - discovery-service
+      - axon-server
+      - keycloak-server
+    environment:
+      - eureka.client.service-url.defaultZone=http://discovery-service:8761/eureka
+    networks:
+      - default-network
+
+  gateway-service:
+    build: ./gateway-service/
+    hostname: gateway-service
+    ports:
+      - "8000:8000"
+    depends_on:
+      - discovery-service
+      - customer-service
+      - inventory-service
+      - order-service
+    environment:
+      - eureka.client.service-url.defaultZone=http://discovery-service:8761/eureka
+    networks:
+      - default-network
+
+networks:
+  default-network:
+    driver: bridge

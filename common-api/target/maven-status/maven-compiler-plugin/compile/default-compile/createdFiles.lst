@@ -1,0 +1,3 @@
+com\abdelhakimrafik\commonapi\queries\CustomerQuery$BaseCustomerQuery.class
+com\abdelhakimrafik\commonapi\queries\CustomerQuery$GetAll.class
+com\abdelhakimrafik\commonapi\queries\CustomerQuery.class
